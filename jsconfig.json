@@ -1,0 +1,13 @@
+// {
+//   "compilerOptions": {
+//     "baseUrl": "src",
+//     "paths": {
+//       "@shared/*": ["shared/*"],
+//       "@features/*": ["features/*"],
+//       "@lib/*": ["lib/*"],
+//       "@assets/*": ["assets/*"],
+//       "@utils/*": ["utils/*"],
+//       "@constants/*": ["constants/*"]
+//     }
+//   }
+// }
