@@ -1,16 +1,31 @@
-import { useMutation } from "@tanstack/react-query";
-import { loginWithEmail } from "./auth.api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { loginWithEmail, logoutUser } from "./auth.api";
 import { useAuthStore } from "../../store/authStore";
+import { decodeToken } from "../../utils/authUtils";
 
 export const useLoginMutation = () => {
-  const setUser = useAuthStore((state) => state.setUser);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   return useMutation({
     mutationFn: loginWithEmail,
-    onSuccess: (data) => {
-      // Data contains the normalized success response
-      setUser(data.data);
+    onSuccess: (response) => {
+      // response.data contains the accessToken as per change.md
+      const token = response.data.accessToken;
+      const user = decodeToken(token);
+      setAuth(user, token);
     },
-    // The consumer (the form hook) will handle onError
+  });
+};
+
+export const useLogoutMutation = () => {
+  const logout = useAuthStore((state) => state.logout);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutUser,
+    onSettled: () => {
+      logout();
+      queryClient.clear();
+    },
   });
 };

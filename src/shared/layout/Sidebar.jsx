@@ -1,7 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
-import { auth } from "../../lib/firebase";
-import { signOut } from "firebase/auth";
+import { useLogoutMutation } from "../../modules/auth/auth.query";
 import {
   BarChart2,
   ShoppingCart,
@@ -30,11 +29,12 @@ import {
 const Sidebar = ({ isOpen }) => {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+  const { mutate: mutateLogout } = useLogoutMutation();
   return (
     <SidebarContainer isOpen={isOpen}>
       <SidebarLogoBlock>
         <SidebarLogoIcon>
-          <Monitor size={16} color="white" />
+          <ShoppingCart size={16} color="white" />
         </SidebarLogoIcon>
         <SidebarLogoText>
           <SidebarLogoName>eKart Admin</SidebarLogoName>
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen }) => {
 
       <LogoutSection>
         {user ? (
-          <LogoutButton onClick={() => signOut(auth)}>
+          <LogoutButton onClick={() => mutateLogout()}>
             <LogOut size={20} />
             <span>Logout</span>
           </LogoutButton>

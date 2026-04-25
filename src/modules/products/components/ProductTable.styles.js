@@ -149,6 +149,8 @@ export const ToggleText = styled.span`
   font-size: 11px;
   font-weight: 500;
   color: ${(props) => (props.$isOn ? "var(--text)" : "var(--muted)")};
+  width: 50px;
+  display: inline-block;
 `;
 
 // =====================

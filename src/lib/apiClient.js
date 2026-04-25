@@ -1,22 +1,26 @@
 import { logger } from "../utils/logger";
-import { auth } from "./firebase";
+import { useAuthStore } from "../store/authStore";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+const onTokenRefreshed = (token) => {
+  refreshSubscribers.map((callback) => callback(token));
+  refreshSubscribers = [];
+};
+
+const addRefreshSubscriber = (callback) => {
+  refreshSubscribers.push(callback);
+};
+
 const request = async (endpoint, options = {}) => {
   try {
-    await auth.authStateReady();
-    const user = auth.currentUser;
-    let token = null;
-    if (user) {
-      token = await user.getIdToken();
-      logger.info("Auth token acquired:" + (token ? "Yes" : "No"));
-    } else {
-      logger.info("No user found in auth state.");
-    }
+    const { accessToken } = useAuthStore.getState();
 
     const headers = {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...options.headers,
     };
 
@@ -31,19 +35,67 @@ const request = async (endpoint, options = {}) => {
 
     const result = await response.json();
 
+    // Handle 401 + INVALID_TOKEN for refresh
+    if (
+      response.status === 401 && 
+      result.errorCode === "INVALID_TOKEN" && 
+      !options._retry
+    ) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          addRefreshSubscriber((token) => {
+            options._retry = true;
+            options.headers = { ...options.headers, Authorization: `Bearer ${token}` };
+            resolve(request(endpoint, options));
+          });
+        });
+      }
+
+      isRefreshing = true;
+
+      try {
+        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const refreshResult = await refreshResponse.json();
+
+        if (refreshResult.success && refreshResult.data?.accessToken) {
+          const newToken = refreshResult.data.accessToken;
+          const { setAuth, user } = useAuthStore.getState();
+          setAuth(user, newToken);
+          isRefreshing = false;
+          onTokenRefreshed(newToken);
+
+          options._retry = true;
+          return request(endpoint, options);
+        } else {
+          throw new Error("Refresh failed");
+        }
+      } catch (refreshError) {
+        isRefreshing = false;
+        useAuthStore.getState().logout();
+        throw refreshError;
+      }
+    }
+
     if (!response.ok || result.success === false) {
       const error = new Error(result.message || "Something went wrong");
-
       error.code = result.errorCode || "UNKNOWN_ERROR";
       error.validationErrors = result.errors || null;
       error.status = response.status;
-
       throw error;
     }
-    logger.info("api response data", result.data);
+
+    // Defensive check: if result.data is missing but result has accessToken, 
+    // it might be a flat response. Use result itself as data in that case.
+    const responseData = result.data || (result.accessToken ? result : null);
+
+    logger.info(`API Request: ${endpoint}`, { responseData });
 
     return {
-      data: result.data,
+      data: responseData,
       meta: result.meta || null,
       message: result.message,
     };
@@ -51,11 +103,9 @@ const request = async (endpoint, options = {}) => {
     if (!(err instanceof Error)) {
       const networkError = new Error("Network error. Please try again.");
       networkError.code = "NETWORK_ERROR";
-      networkError.validationErrors = null;
       networkError.status = 500;
       throw networkError;
     }
-
     throw err;
   }
 };
