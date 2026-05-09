@@ -3,6 +3,7 @@ import MainLayout from "../shared/layout/MainLayout";
 import ProductsRoutes from "../modules/products/ProductRoutes";
 import AuthRoutes from "../modules/auth/AuthRoutes";
 import OrderRoutes from "../modules/orders/OrderRoutes";
+import DashboardRoutes from "../modules/dashbaord/DashboardRoutes";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import ForbiddenPage from "./pages/ForbiddenPage/ForbiddenPage";
 import ProtectedRoute from "../shared/components/ProtectedRoute";
@@ -21,6 +22,7 @@ const AppRouter = () => {
         element={
           <ProtectedRoute requiredRole="admin">
             <MainLayout>
+              <DashboardRoutes />
               <ProductsRoutes />
               <OrderRoutes />
             </MainLayout>

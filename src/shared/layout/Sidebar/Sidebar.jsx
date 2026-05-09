@@ -44,19 +44,15 @@ const Sidebar = ({ isOpen }) => {
 
       <NavList>
         <NavSectionLabel>MAIN</NavSectionLabel>
-        {/* <StyledNavLink to="/analytics">
+        <StyledNavLink to="/">
           <BarChart2 />
-          <span>Analytics</span>
-        </StyledNavLink> */}
+          <span>Dashboard</span>
+        </StyledNavLink>
         <StyledNavLink to="/orders">
           <ShoppingCart />
           <span>Orders</span>
         </StyledNavLink>
-        {/* <StyledNavLink to="/users">
-          <Users />
-          <span>Users</span>
-        </StyledNavLink> */}
-        <StyledNavLink to="/">
+        <StyledNavLink to="/products">
           <Package />
           <span>Products</span>
         </StyledNavLink>
