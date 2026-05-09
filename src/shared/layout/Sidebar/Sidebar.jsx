@@ -10,6 +10,7 @@ import {
   Monitor,
   LogOut,
   LogIn,
+  PieChart,
 } from "lucide-react";
 import {
   SidebarContainer,
@@ -47,6 +48,10 @@ const Sidebar = ({ isOpen }) => {
         <StyledNavLink to="/">
           <BarChart2 />
           <span>Dashboard</span>
+        </StyledNavLink>
+        <StyledNavLink to="/analytics">
+          <PieChart />
+          <span>Analytics</span>
         </StyledNavLink>
         <StyledNavLink to="/orders">
           <ShoppingCart />

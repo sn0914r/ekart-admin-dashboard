@@ -4,6 +4,7 @@ import ProductsRoutes from "../modules/products/ProductRoutes";
 import AuthRoutes from "../modules/auth/AuthRoutes";
 import OrderRoutes from "../modules/orders/OrderRoutes";
 import DashboardRoutes from "../modules/dashbaord/DashboardRoutes";
+import AnalyticsRoute from "../modules/analytics/AnalyticsRoute";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import ForbiddenPage from "./pages/ForbiddenPage/ForbiddenPage";
 import ProtectedRoute from "../shared/components/ProtectedRoute";
@@ -23,6 +24,7 @@ const AppRouter = () => {
           <ProtectedRoute requiredRole="admin">
             <MainLayout>
               <DashboardRoutes />
+              <AnalyticsRoute />
               <ProductsRoutes />
               <OrderRoutes />
             </MainLayout>
